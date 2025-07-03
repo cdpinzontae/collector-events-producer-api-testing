@@ -6,7 +6,7 @@ Test automation SUCCESS execution
 
 # Report link: https://s3.amazonaws.com/dev.airmiles.ca/travel2.0-miles/${env.BUILD_NUMBER}/index.html 
 
-# Jenkins execution link: https://jenkinstein.loyalty.com/job/collector-events-producer-api-testing/${BUILD_NUMBER}/ 
+# Jenkins execution link: https://jenkinstein.loyalty.com/job/travel2-finance-test-automation/${BUILD_NUMBER}/ 
 
 # Jenkins build number execution: ${BUILD_NUMBER} 
 
@@ -18,7 +18,7 @@ Test automation FAILURE execution
 
 # Report link: https://s3.amazonaws.com/dev.airmiles.ca/travel2.0-miles/${env.BUILD_NUMBER}/index.html 
 
-# Jenkins execution link: https://jenkinstein.loyalty.com/job/collector-events-producer-api-testing/${BUILD_NUMBER}/ 
+# Jenkins execution link: https://jenkinstein.loyalty.com/job/travel2-finance-test-automation/${BUILD_NUMBER}/ 
 
 # Jenkins build number execution: ${BUILD_NUMBER} 
 
@@ -28,7 +28,7 @@ def emailMessageAborted = """================================
 Test automation ABORTED execution 
 ================================ 
 
-# Jenkins execution link: https://jenkinstein.loyalty.com/job/collector-events-producer-api-testing/${BUILD_NUMBER}/ 
+# Jenkins execution link: https://jenkinstein.loyalty.com/job/travel2-finance-test-automation/${BUILD_NUMBER}/ 
 
 # Jenkins build number execution: ${BUILD_NUMBER} 
 
@@ -44,10 +44,14 @@ pipeline {
         }
     }
 
+    options {
+        skipDefaultCheckout(true) // evitamos que el SCM corra automáticamente para hacer limpieza primero
+    }
+
     parameters {
         choice(name: "ENVIRONMENTS", choices: ["uat", "load", "dev", "int"], description: "Select environment")
         string(name: "TAGS", defaultValue: "@enrollment", description: "Enter tags for Cucumber tests")
-        booleanParam(defaultValue: true, name: 'DEFAULT', description: 'If you select the default option, the test cases will be executed on UAT environment and Regression tag')
+        booleanParam(name: 'DEFAULT', defaultValue: true, description: 'Use UAT and Regression tag if true')
     }
 
     stages {
@@ -57,12 +61,18 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build & Run Tests') {
             steps {
                 script {
                     sh """
-                        echo ":::::..... The tests cases are running configuration: .....:::::"
-                        echo ${params.ENVIRONMENTS}
+                        echo ":::::..... The test cases are running with configuration: .....:::::"
+                        echo Environment: ${params.ENVIRONMENTS}
                         chmod +x gradlew
                         ./gradlew clean test -Dspring.profiles.active=${params.ENVIRONMENTS} -Dcucumber.filter.tags="${params.TAGS}"
                     """
@@ -73,41 +83,37 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline completed. Checking post conditions..."
-            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
-                credentialsId: 'aws-creds-id',
-                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                sh 'echo "Cleanup or notification step..."'
+            script {
+                echo "Cleaning up or post-processing"
             }
         }
 
         success {
             script {
-                mail (
-                    subject: "Test automation SUCCESS execution ${BUILD_NUMBER}",
-                    body: "${emailMessageSuccess}",
-                    to: "${mailTo}"
+                mail(
+                    subject: "Test automation SUCCESS execution ${env.BUILD_NUMBER}",
+                    body: emailMessageSuccess,
+                    to: mailTo
                 )
             }
         }
 
         failure {
             script {
-                mail (
-                    subject: "Test automation FAILURE execution ${BUILD_NUMBER} :(",
-                    body: "${emailMessageFailure}",
-                    to: "${mailTo}"
+                mail(
+                    subject: "Test automation FAILURE execution ${env.BUILD_NUMBER} :(",
+                    body: emailMessageFailure,
+                    to: mailTo
                 )
             }
         }
 
         aborted {
             script {
-                mail (
-                    subject: "Test automation ABORTED execution ${BUILD_NUMBER} :(",
-                    body: "${emailMessageAborted}",
-                    to: "${mailTo}"
+                mail(
+                    subject: "Test automation ABORTED execution ${env.BUILD_NUMBER} :(",
+                    body: emailMessageAborted,
+                    to: mailTo
                 )
             }
         }
