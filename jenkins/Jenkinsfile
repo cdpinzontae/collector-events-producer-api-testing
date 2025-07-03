@@ -34,7 +34,7 @@ Test automation ABORTED execution
 
 # Status: ABORTED"""
 
-def mailTo = "ccuero@loyalty.com,cdiazpinzon@loyalty.com"
+def mailTo = "cdiazpinzon@loyalty.com"
 
 pipeline {
     agent {
@@ -44,84 +44,45 @@ pipeline {
         }
     }
 
-    options {
-        skipDefaultCheckout(true)  // evitamos el checkout automático para limpiarlo antes
-    }
-
     parameters {
         choice(name: "ENVIRONMENTS", choices: [ "uat", "load", "dev", "int"], description: "Select environment")
         string(name: "TAGS", defaultValue: "@enrollment", description: "Enter tags for Cucumber tests")
         booleanParam(defaultValue: true, name: 'DEFAULT', description: 'If you select the default option, the test cases will be executed on UAT environment and Regression tag')
     }
 
-    environment {
-        SELECTED_ENV = "${params.ENVIRONMENTS}"
-        SELECTED_TAGS = "${params.TAGS}"
-    }
-
     stages {
-       
         stage('Checkout') {
             steps {
+                echo 'Checking out source code...'
                 checkout scm
             }
         }
 
-        stage('Prepare Parameters') {
-            steps {
-                script {
-                    if (params.DEFAULT) {
-                        env.SELECTED_ENV = "uat"
-                        env.SELECTED_TAGS = "@regression"
-                        echo "Default selected: overriding to env=uat and tags=@regression"
-                    } else {
-                        echo "Custom execution: env=${params.ENVIRONMENTS}, tags=${params.TAGS}"
-                    }
-                }
-            }
-        }
+        // Eliminar stage de cleanWs porque el plugin no está disponible
+        // stage('Clean Workspace') {
+        //     steps {
+        //         cleanWs()
+        //     }
+        // }
 
-        stage('Build & Run Tests') {
+        stage('Build') {
             steps {
                 script {
-                    sh '''
-                        set -e
-                        echo "::::: Running Tests :::::"
-                        echo "Environment: $SELECTED_ENV"
-                        echo "Tags: $SELECTED_TAGS"
+                    sh """
+                        echo ":::::..... The test cases are running configuration: .....:::::"
+                        echo "${params.ENVIRONMENTS}"
                         chmod +x gradlew
-                        ./gradlew clean test -Dspring.profiles.active=$SELECTED_ENV -Dcucumber.filter.tags="$SELECTED_TAGS"
-                    '''
-                }
-            }
-        }
-
-        stage('Upload Report to S3') {
-            when {
-                expression { fileExists('build/reports/cucumber/index.html') }
-            }
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-creds-id',
-                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                    sh '''
-                        echo "Uploading report to S3..."
-                        aws s3 cp build/reports/cucumber/index.html s3://dev.airmiles.ca/travel2.0-miles/$BUILD_NUMBER/index.html
-                    '''
+                        ./gradlew clean test -Dspring.profiles.active=${params.ENVIRONMENTS} -Dcucumber.filter.tags="${params.TAGS}"
+                    """
                 }
             }
         }
     }
 
     post {
-        always {
-            echo "Pipeline completed. Checking post conditions..."
-        }
-
         success {
             script {
-                mail (
+                mail(
                     subject: "Test automation SUCCESS execution ${BUILD_NUMBER}",
                     body: emailMessageSuccess,
                     to: mailTo
@@ -131,7 +92,7 @@ pipeline {
 
         failure {
             script {
-                mail (
+                mail(
                     subject: "Test automation FAILURE execution ${BUILD_NUMBER} :(",
                     body: emailMessageFailure,
                     to: mailTo
@@ -141,7 +102,7 @@ pipeline {
 
         aborted {
             script {
-                mail (
+                mail(
                     subject: "Test automation ABORTED execution ${BUILD_NUMBER} :(",
                     body: emailMessageAborted,
                     to: mailTo
