@@ -57,6 +57,7 @@ pipeline {
                     sh """
                         echo ":::::..... The tests cases are running configuration: .....:::::"
                         echo $params.ENVIRONMENTS
+                        chmod +x gradlew
                         ./gradlew clean test -Dspring.profiles.active=${params.ENVIRONMENTS} -Dcucumber.filter.tags="${params.TAGS}"
                     """
                 }
