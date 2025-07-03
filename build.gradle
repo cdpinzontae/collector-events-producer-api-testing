@@ -1,0 +1,94 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.2'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id "net.serenity-bdd.serenity-gradle-plugin" version "3.5.0"
+
+}
+defaultTasks 'clean', 'test', 'aggregate'
+group = 'com.airmiles'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	slf4jVersion = '1.7.7'
+	serenityCoreVersion = '3.6.0'
+	serenityCucumberVersion = '3.6.0'
+	junitVersion = '5.10.2'
+	assertJVersion = '3.8.0'
+	logbackVersion = '1.2.3'
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testRuntimeOnly    "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+
+	implementation 'io.rest-assured:rest-assured:5.5.0'
+	implementation 'io.rest-assured:json-path:5.5.0'
+	implementation 'io.rest-assured:xml-path:5.5.0'
+
+	testImplementation "org.junit.platform:junit-platform-commons:1.10.2"
+	testImplementation("net.serenity-bdd:serenity-core:${serenityCoreVersion}",
+			"net.serenity-bdd:serenity-cucumber:${serenityCucumberVersion}",
+			"junit:junit:${junitVersion}",
+			"org.springframework.boot:spring-boot-starter-test",
+
+	)
+
+	testImplementation 'org.junit.platform:junit-platform-suite:1.9.3'
+	testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+	testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.11.2'
+	testImplementation 'io.cucumber:cucumber-java:7.11.2'
+	testImplementation 'io.rest-assured:rest-assured:5.3.1'
+	testImplementation 'junit:junit:4.13.2'
+	testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+
+	compileOnly(
+			"org.projectlombok:lombok:1.18.30",
+	)
+
+	testCompileOnly(
+			"org.projectlombok:lombok:1.18.24",
+	)
+
+	testImplementation(
+			"org.junit.jupiter:junit-jupiter-api:5.9.0",
+	)
+
+	testRuntimeOnly(
+			"org.junit.jupiter:junit-jupiter-engine:5.9.0",
+	)
+
+	annotationProcessor(
+			"org.projectlombok:lombok:1.18.30",
+	)
+
+	testAnnotationProcessor(
+			"org.projectlombok:lombok:1.18.30",
+	)
+
+
+}
+
+//tasks.named('test') {
+//	useJUnitPlatform()
+//}
+
+test {
+	useJUnitPlatform()
+	testLogging.showStandardStreams = true
+	systemProperties System.getProperties()
+}
+//gradle.startParameter.continueOnFailure = true
+//test.finalizedBy(aggregate)

@@ -1,0 +1,43 @@
+app:
+  config:
+    localstackEndpoint: http://localhost:4566
+  aws:
+    travel2-finance-ingester-s3-incoming: uat-travel2-finance-ingester-s3-incoming
+    travel2-finance-invoice-s3-invoices: dev-travel2-finance-invoice-s3-invoices
+    travel2-finance-s3-mock_sabre: dev-travel2-finance-ingester-s3-mock-sabre
+    travel2-finance-ingester-app-invoice-generator : dev-travel2-finance-ingester-app-invoice-generator
+    travel2-finance-ingester-app-reservation-selector: dev-travel2-finance-ingester-app-reservation-selector
+    travel2-finance-ingester-app-reservation-loader: dev-travel2-finance-ingester-app-reservation-loader
+    travel2-finance-enable-datasync : dev-travel2-finance-invoi-FinanceInvoiceCronExpress-R2AjdCt9Y6x9
+    travel2-finance-ingester-sqs-reservation-loaded : dev-travel2-finance-ingester-sqs-reservation-loaded
+    travel2-finance-ingester-sqs-reservation-selected : dev-travel2-finance-ingester-sqs-reservation-selected
+    travel2-finance-invoice-state-machine-sync-process: arn:aws:states:ca-central-1:731514047021:stateMachine:dev-travel2-finance-invoice-state-machine-sync-process
+    travel2-finance-ingester-s3-reservations: dev-travel2-finance-ingester-s3-reservations
+    travel2-finance-tcc-s3-moneris-extract: dev-travel2-finance-tcc-s3-moneris-extract
+    travel2-finance-tcc-s3-archive-matched: dev-travel2-finance-tcc-s3-archive-matched
+    travel2-finance-tcc-s3-archive-nomatched: dev-travel2-finance-tcc-s3-archive-nomatched
+    travel2-finance-tcc-s3-moneris-output-extract: dev-travel2-finance-tcc-s3-moneris-output-extract
+    travel2-finance-tcc-s3-archive-agresso-extract: dev-travel2-finance-tcc-s3-archive-agresso-extract
+    travel2-finance-itin-flow-itin-query-data-state-machine: arn:aws:states:ca-central-1:731514047021:stateMachine:dev-travel2-finance-itin-flow-itin-query-data-state-machine
+    travel2-finance-itin-s3-matched: dev-travel2-finance-itin-s3-matched
+    travel2-finance-itin-s3-notmatched: dev-travel2-finance-itin-s3-nomatched
+    travel2-finance-itin-app-transaction-loader: dev-travel2-finance-itin-app-transaction-loader
+    travel2-finance-itin-s3-transaction: dev-travel2-finance-itin-s3-transaction
+    travel2-finance-itin-job-agresso-data-fetch: dev-travel2-finance-itin-job-agresso-data-fetch
+    travel2-finance-itin-job-match-and-nomatch:  dev-travel2-finance-itin-job-match-and-nomatch
+    travel2-finance-itin-s3-invoices: dev-travel2-finance-itin-s3-invoices
+    travel2-finance-itin-app-miles-capturer: dev-travel2-finance-itin-app-miles-capturer
+    travel2-finance-itin-s3-archive-matched: dev-travel2-finance-itin-s3-archive-matched
+
+spring:
+  datasource:
+    reservations:
+      url: jdbc:postgresql://dev-amrpint-reservations-postgres-db-1.caiy5g8xieys.ca-central-1.rds.amazonaws.com:5432/reservations
+      secretId: dev-amrpint-reservations-postgres-db-appuser
+    agresso:
+      url: jdbc:sqlserver://172.25.236.154\AGSM7N:50335;encrypt=true;trustServerCertificate=true
+      secretId: dev-travel2-finance-tcc-agresso-database-secrets
+api:
+  base-uri-rcg: https://dev.internal.airmilesapis.ca/travel2-finance/
+  base-uri-rcg-token: https://auth.dev.airmiles.ai
+  secretId: dev-travel2-finance-test-automation-api-rcg-secrets

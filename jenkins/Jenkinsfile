@@ -1,0 +1,107 @@
+@Library('jenkins-shared-lib-v2') _
+
+emailMessageSuccess = """================================ 
+Test automation SUCCESS execution 
+================================ 
+
+# Report link: https://s3.amazonaws.com/dev.airmiles.ca/travel2.0-miles/${env.BUILD_NUMBER}/index.html 
+
+# Jenkins execution link https://jenkinstein.loyalty.com/job/travel2-finance-test-automation/${BUILD_NUMBER}/ 
+
+# Jenkins build number execution: ${BUILD_NUMBER} 
+
+# Status: SUCCESS"""
+
+emailMessageFailure = """================================ 
+Test automation FAILURE execution 
+================================ 
+
+# Report link: https://s3.amazonaws.com/dev.airmiles.ca/travel2.0-miles/${env.BUILD_NUMBER}/index.html 
+
+# Jenkins execution link: https://jenkinstein.loyalty.com/job/travel2-finance-test-automation/${BUILD_NUMBER}/ 
+
+# Jenkins build number execution: ${BUILD_NUMBER} 
+
+# Status: FAILURE"""
+
+emailMessageAborted = """================================ 
+Test automation ABORTED execution 
+================================ 
+
+# Jenkins execution link: https://jenkinstein.loyalty.com/job/travel2-finance-test-automation/${BUILD_NUMBER}/ 
+
+# Jenkins build number execution: ${BUILD_NUMBER} 
+
+# Status: ABORTED"""
+
+mailTo = "ccuero@loyalty.com,cdiazpinzon@loyalty.com"
+
+pipeline {
+    agent {
+        dockerfile {
+            label 'aws-ec2'
+            args '-u root:root'
+        }
+    }
+
+    parameters {
+        choice(name: "ENVIRONMENTS", choices: [ "uat", "load", "dev", "int"], description: "Select environment")
+        string(name: "TAGS", defaultValue: "@enrollment", description: "Enter tags for Cucumber tests")
+        booleanParam(defaultValue: true, name: 'DEFAULT', description: 'If you select the default option, the test cases will be executed on UAT environment and Regression tag')
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    sh """
+                        echo ":::::..... The tests cases are running configuration: .....:::::"
+                        echo $params.ENVIRONMENTS
+                        ./gradlew clean test -Dspring.profiles.active=${params.ENVIRONMENTS} -Dcucumber.filter.tags="${params.TAGS}"
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-creds-id',
+                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                sh 'echo "Cleanup or notification step..."'
+            }
+        }
+
+        success {
+            script {
+                mail (
+                    subject: "Test automation SUCCESS execution ${BUILD_NUMBER}",
+                    body: """${emailMessageSuccess}""",
+                    to: """${mailTo}"""
+                )
+            }
+        }
+
+        failure {
+            script {
+                mail (
+                    subject: "Test automation FAILURE execution ${BUILD_NUMBER} :(",
+                    body: """${emailMessageFailure}""",
+                    to: """${mailTo}"""
+                )
+            }
+        }
+
+        aborted {
+            script {
+                mail (
+                    subject: "Test automation ABORTED execution ${BUILD_NUMBER} :(",
+                    body: """${emailMessageAborted}""",
+                    to: """${mailTo}"""
+                )
+            }
+        }
+    }
+}
