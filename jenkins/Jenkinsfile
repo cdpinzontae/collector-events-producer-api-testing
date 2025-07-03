@@ -1,18 +1,18 @@
 @Library('jenkins-shared-lib-v2') _
 
-def emailMessageSuccess = """================================ 
+emailMessageSuccess = """================================ 
 Test automation SUCCESS execution 
 ================================ 
 
 # Report link: https://s3.amazonaws.com/dev.airmiles.ca/travel2.0-miles/${env.BUILD_NUMBER}/index.html 
 
-# Jenkins execution link: https://jenkinstein.loyalty.com/job/travel2-finance-test-automation/${BUILD_NUMBER}/ 
+# Jenkins execution link https://jenkinstein.loyalty.com/job/travel2-finance-test-automation/${BUILD_NUMBER}/ 
 
 # Jenkins build number execution: ${BUILD_NUMBER} 
 
 # Status: SUCCESS"""
 
-def emailMessageFailure = """================================ 
+emailMessageFailure = """================================ 
 Test automation FAILURE execution 
 ================================ 
 
@@ -24,7 +24,7 @@ Test automation FAILURE execution
 
 # Status: FAILURE"""
 
-def emailMessageAborted = """================================ 
+emailMessageAborted = """================================ 
 Test automation ABORTED execution 
 ================================ 
 
@@ -34,7 +34,7 @@ Test automation ABORTED execution
 
 # Status: ABORTED"""
 
-def mailTo = "ccuero@loyalty.com,cdiazpinzon@loyalty.com"
+mailTo = "ccuero@loyalty.com,cdiazpinzon@loyalty.com"
 
 pipeline {
     agent {
@@ -50,54 +50,16 @@ pipeline {
         booleanParam(defaultValue: true, name: 'DEFAULT', description: 'If you select the default option, the test cases will be executed on UAT environment and Regression tag')
     }
 
-    environment {
-        SELECTED_ENV = "${params.ENVIRONMENTS}"
-        SELECTED_TAGS = "${params.TAGS}"
-    }
-
     stages {
-        stage('Prepare Parameters') {
+        stage('Build') {
             steps {
                 script {
-                    if (params.DEFAULT) {
-                        env.SELECTED_ENV = "uat"
-                        env.SELECTED_TAGS = "@regression"
-                        echo "Default selected: overriding to env=uat and tags=@regression"
-                    } else {
-                        echo "Custom execution: env=${params.ENVIRONMENTS}, tags=${params.TAGS}"
-                    }
-                }
-            }
-        }
-
-        stage('Build & Run Tests') {
-            steps {
-                script {
-                    sh '''
-                        set -e
-                        echo "::::: Running Tests :::::"
-                        echo "Environment: $SELECTED_ENV"
-                        echo "Tags: $SELECTED_TAGS"
+                    sh """
+                        echo ":::::..... The tests cases are running configuration: .....:::::"
+                        echo $params.ENVIRONMENTS
                         chmod +x gradlew
-                        ./gradlew clean test -Dspring.profiles.active=$SELECTED_ENV -Dcucumber.filter.tags="$SELECTED_TAGS"
-                    '''
-                }
-            }
-        }
-
-        stage('Upload Report to S3') {
-            when {
-                expression { fileExists('build/reports/cucumber/index.html') }
-            }
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-creds-id',
-                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                    sh '''
-                        echo "Uploading report to S3..."
-                        aws s3 cp build/reports/cucumber/index.html s3://dev.airmiles.ca/travel2.0-miles/$BUILD_NUMBER/index.html
-                    '''
+                        ./gradlew clean test -Dspring.profiles.active=${params.ENVIRONMENTS} -Dcucumber.filter.tags="${params.TAGS}"
+                    """
                 }
             }
         }
@@ -105,15 +67,20 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline finished. Running cleanup or notification step..."
+            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-creds-id',
+                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                sh 'echo "Cleanup or notification step..."'
+            }
         }
 
         success {
             script {
                 mail (
                     subject: "Test automation SUCCESS execution ${BUILD_NUMBER}",
-                    body: emailMessageSuccess,
-                    to: mailTo
+                    body: """${emailMessageSuccess}""",
+                    to: """${mailTo}"""
                 )
             }
         }
@@ -122,8 +89,8 @@ pipeline {
             script {
                 mail (
                     subject: "Test automation FAILURE execution ${BUILD_NUMBER} :(",
-                    body: emailMessageFailure,
-                    to: mailTo
+                    body: """${emailMessageFailure}""",
+                    to: """${mailTo}"""
                 )
             }
         }
@@ -132,8 +99,8 @@ pipeline {
             script {
                 mail (
                     subject: "Test automation ABORTED execution ${BUILD_NUMBER} :(",
-                    body: emailMessageAborted,
-                    to: mailTo
+                    body: """${emailMessageAborted}""",
+                    to: """${mailTo}"""
                 )
             }
         }
