@@ -1,4 +1,4 @@
-@Library('jenkins-shared-lib-v2') _
+@Library('jenkins-shared-lib-v2@1de6e8eaf353b7c3609f69bdf3bd98027cee0e8a') _
 
 def emailMessageSuccess = """================================ 
 Test automation SUCCESS execution 
