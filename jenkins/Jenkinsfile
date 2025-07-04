@@ -34,7 +34,7 @@ Test automation ABORTED execution
 
 # Status: ABORTED"""
 
-def mailTo = "ccuero@loyalty.com,cdiazpinzon@loyalty.com"
+def mailTo = "cdiazpinzon@loyalty.com"
 
 pipeline {
     agent {
