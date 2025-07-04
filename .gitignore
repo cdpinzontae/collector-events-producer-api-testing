@@ -1,40 +1,43 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
+# Compiled class files
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+# Eclipse
+.settings/
 .project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+.classpath
 
-### IntelliJ IDEA ###
-.idea
-*.iws
+# IntelliJ
 *.iml
-*.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+.idea/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# Gradle
+.gradle/
+build/
 
-### VS Code ###
+# VS Code
 .vscode/
+
+# Mac system files
+.DS_Store
+
 # Serenity and build output
 target/
 .serenity/
