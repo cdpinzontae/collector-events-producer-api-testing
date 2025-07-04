@@ -45,10 +45,6 @@ pipeline {
         }
     }
 
-    options {
-        skipDefaultCheckout(false)
-    }
-
     parameters {
         choice(name: "ENVIRONMENTS", choices: ["uat", "load", "dev", "int"], description: "Select environment")
         string(name: "TAGS", defaultValue: "@enrollment", description: "Enter tags for Cucumber tests")
