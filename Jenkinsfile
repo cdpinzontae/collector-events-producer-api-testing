@@ -38,9 +38,7 @@ def mailTo = "cdiazpinzon@loyalty.com"
 
 pipeline {
     agent {
-        dockerfile {
-			filename '../Dockerfile'     
-			dir '.'                      
+        dockerfile {                   
             label 'aws-ec2'
             args '-u root:root'
         }
