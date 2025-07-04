@@ -86,9 +86,7 @@ dependencies {
 //}
 
 test {
-	useJUnitPlatform()
-	testLogging.showStandardStreams = true
-	systemProperties System.getProperties()
+    useJUnitPlatform()
+    testLogging.showStandardStreams = true
+    systemProperties System.getProperties()
 }
-//gradle.startParameter.continueOnFailure = true
-//test.finalizedBy(aggregate)
