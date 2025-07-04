@@ -38,14 +38,15 @@ def mailTo = "cdiazpinzon@loyalty.com"
 
 pipeline {
     agent {
-        dockerfile {                   
+        dockerfile { 
+			filename 'Dockerfile'
             label 'aws-ec2'
             args '-u root:root'
         }
     }
 
     options {
-        skipDefaultCheckout(true) // evitamos que el SCM corra automáticamente para hacer limpieza primero
+        skipDefaultCheckout(false)
     }
 
     parameters {
